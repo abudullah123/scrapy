@@ -1,0 +1,54 @@
+import requests
+import re
+import csv
+import time
+#url1 = r"http://www.tzfdc.com.cn/html/model/index"
+urls = []
+for page in range(117,138):
+    url = 'http://www.tzfdc.com.cn/index.php?caid=11&page={}'.format(page)
+    urls.append(url)
+    headers = {
+    "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"}
+#url2 = r"3"
+#print(urls)
+#到36页卡住了，因为网站结构发生变化
+
+    for url in urls:
+        resp = requests.get(url,headers=headers,timeout=10)
+        #time.sleep(3)
+        resp.encoding = "utf-8"
+        resp = resp.text
+            #print(resp)
+
+        obj1 = re.compile(r'<div class="houselist">.*?'
+                          r"<span id='floor_8392'>(?P<name>.*?)</span>.*?"
+                          r'<p>(?P<project>.*?)</p>'
+                          r'.*?<p>(?P<local>.*?)</p>'
+                          r'.*?<p>(?P<property_type>.*?)</p>'
+                          r'.*?<p>(?P<apartment_layout>.*?)</p>'
+                          r'.*?<p class="fco fw6 dj">(?P<area>.*?)M&sup2;</p>.*?</div>',re.S)
+        result1 = obj1.finditer(resp)
+        f = open("taizhou_huxin_data_20220413.csv",mode="a",encoding="utf-8",newline="")
+        csvwriter = csv.writer(f)
+
+        for it in result1:
+    #print(it.group("project"))
+    #print(it.group("local"))
+    #print(it.group("property_type"))
+    #print(it.group("apartment_layout"))
+    #print(it.group("area"))
+            dic = it.groupdict()
+        #print(dic)
+        #dic_len = len(dic)
+        #print(dic_len)
+        #if dic_len ==6:
+            #print("数据正确")
+            #print(dic.keys())
+
+            csvwriter.writerow(dic.values()) #把值写入csv
+    s = str(page)
+    print("完成第" + s + "个了！")
+
+f.close()
+print("over")
